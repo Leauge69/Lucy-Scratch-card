@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scratch‑off Effect</title>
+  <style>
+    #scratch-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+    }
+    #scratch-image {
+      width: 100%;
+      display: block;
+    }
+    #scratch-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="scratch-container">
+    <img id="scratch-image" src="00057-4010962792.png" alt="Scratch image">
+    <canvas id="scratch-canvas"></canvas>
+  </div>
+
+  <script>
+    const img = document.getElementById('scratch-image');
+    const canvas = document.getElementById('scratch-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = img.clientWidth;
+      canvas.height = img.clientHeight;
+
+      // fill canvas with a gray overlay
+      ctx.fillStyle = '#888';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function scratch(event) {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const radius = 25;
+
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+      ctx.fill();
+    }
+
+    canvas.addEventListener('mousedown', () => {
+      canvas.addEventListener('mousemove', scratch);
+    });
+
+    window.addEventListener('mouseup', () => {
+      canvas.removeEventListener('mousemove', scratch);
+    });
+
+    // Resize the canvas to match the image once it loads
+    img.onload = resizeCanvas;
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+</body>
+</html>
