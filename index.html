@@ -27,7 +27,7 @@
       position: absolute;
       top: 0;
       left: 0;
-      cursor: pointer;
+      touch-action: none; /* Prevent default scrolling on touch devices */
     }
   </style>
 </head>
@@ -44,7 +44,6 @@
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
-      // Match the canvas size to the displayed image size
       canvas.width = img.clientWidth;
       canvas.height = img.clientHeight;
 
@@ -60,27 +59,47 @@
       ctx.fillText('Scratch me', canvas.width / 2, canvas.height / 2);
     }
 
-    function scratch(event) {
+    function getPosition(event) {
       const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const radius = 25; // brush size
+      let x, y;
+      if (event.touches) {
+        x = event.touches[0].clientX - rect.left;
+        y = event.touches[0].clientY - rect.top;
+      } else {
+        x = event.clientX - rect.left;
+        y = event.clientY - rect.top;
+      }
+      return { x, y };
+    }
 
-      // Erase circular areas from the overlay
+    function scratch(event) {
+      event.preventDefault();
+      const { x, y } = getPosition(event);
+      const radius = 25;
+
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2, false);
       ctx.fill();
     }
 
-    // Add and remove scratch behavior on mouse events
-    canvas.addEventListener('mousedown', () => {
+    function startScratch(event) {
+      scratch(event);
       canvas.addEventListener('mousemove', scratch);
-    });
+      canvas.addEventListener('touchmove', scratch);
+    }
 
-    window.addEventListener('mouseup', () => {
+    function endScratch() {
       canvas.removeEventListener('mousemove', scratch);
-    });
+      canvas.removeEventListener('touchmove', scratch);
+    }
+
+    // Event listeners for both mouse and touch
+    canvas.addEventListener('mousedown', startScratch);
+    canvas.addEventListener('touchstart', startScratch);
+
+    window.addEventListener('mouseup', endScratch);
+    window.addEventListener('touchend', endScratch);
 
     // Initialize the canvas once the image has loaded
     img.onload = resizeCanvas;
