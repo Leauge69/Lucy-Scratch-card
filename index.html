@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Scratch‑off Effect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scratch‑Off Demo</title>
   <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
     #scratch-container {
       position: relative;
       width: 100%;
@@ -17,11 +27,13 @@
       position: absolute;
       top: 0;
       left: 0;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div id="scratch-container">
+    <!-- Replace with your image filename -->
     <img id="scratch-image" src="00057-4010962792.png" alt="Scratch image">
     <canvas id="scratch-canvas"></canvas>
   </div>
@@ -32,26 +44,36 @@
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
+      // Match the canvas size to the displayed image size
       canvas.width = img.clientWidth;
       canvas.height = img.clientHeight;
 
-      // fill canvas with a gray overlay
-      ctx.fillStyle = '#888';
+      // Draw a semi‑opaque gray overlay
+      ctx.fillStyle = 'rgba(136, 136, 136, 0.95)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the "Scratch me" text centered on the overlay
+      ctx.font = 'bold 36px Arial';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Scratch me', canvas.width / 2, canvas.height / 2);
     }
 
     function scratch(event) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      const radius = 25;
+      const radius = 25; // brush size
 
+      // Erase circular areas from the overlay
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2, false);
       ctx.fill();
     }
 
+    // Add and remove scratch behavior on mouse events
     canvas.addEventListener('mousedown', () => {
       canvas.addEventListener('mousemove', scratch);
     });
@@ -60,7 +82,7 @@
       canvas.removeEventListener('mousemove', scratch);
     });
 
-    // Resize the canvas to match the image once it loads
+    // Initialize the canvas once the image has loaded
     img.onload = resizeCanvas;
     window.addEventListener('resize', resizeCanvas);
   </script>
